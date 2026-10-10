@@ -1,0 +1,18 @@
+services:
+  rollarr-controller:
+    image: ghcr.io/vladido/rollarr-controller:latest
+    container_name: rollarr-controller
+    restart: unless-stopped
+    env_file:
+      - ./config/rollarr-controller/controller.env
+    volumes:
+      - ./config/rollarr-controller/state:/state
+    expose:
+      - "8080"
+    networks:
+      - servarr
+
+networks:
+  servarr:
+    external: true
+    name: ${SERVARR_NETWORK:-servarr}

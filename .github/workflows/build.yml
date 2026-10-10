@@ -1,0 +1,33 @@
+name: Publish container
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: ${{ github.server_url != 'https://github.com' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: vladido
+          password: ${{ secrets.PUBLIC_REGISTRY_TOKEN }}
+      - name: Build and push image
+        env:
+          VCS_REF: ${{ github.sha }}
+        run: |
+          docker build --pull \
+            --build-arg "VCS_REF=$VCS_REF" \
+            --label "org.opencontainers.image.revision=$VCS_REF" \
+            --label "org.opencontainers.image.source=https://github.com/vladido/rollarr-controller" \
+            --tag ghcr.io/vladido/rollarr-controller:latest \
+            --tag "ghcr.io/vladido/rollarr-controller:sha-$VCS_REF" .
+          docker push ghcr.io/vladido/rollarr-controller:latest
+          docker push "ghcr.io/vladido/rollarr-controller:sha-$VCS_REF"
